@@ -1,5 +1,6 @@
 package com.github.johnbanq.wiresquid;
 
+import com.github.johnbanq.wiresquid.gui.RootWindow;
 import com.github.johnbanq.wiresquid.gui.Styling;
 import imgui.*;
 import imgui.app.Application;
@@ -10,6 +11,8 @@ import static com.github.johnbanq.wiresquid.gui.Styling.getFont;
 import static com.github.johnbanq.wiresquid.gui.Styling.loadFonts;
 
 public class Main extends Application {
+
+    private RootWindow root;
 
     @Override
     protected void configure(Configuration config) {
@@ -22,12 +25,13 @@ public class Main extends Application {
         super.initImGui(config);
         loadFonts();
         Styling.configureStyle(ImGui.getStyle());
+        root = new RootWindow();
     }
 
     @Override
     public void process() {
         ImGui.pushFont(getFont());
-        ImGui.text("Hello, World!");
+        root.render();
         ImGui.popFont();
     }
 
