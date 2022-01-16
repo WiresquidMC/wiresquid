@@ -1,6 +1,6 @@
 package com.github.johnbanq.wiresquid.gui;
 
-import com.github.johnbanq.wiresquid.gui.session.SessionsWindow;
+import com.github.johnbanq.wiresquid.gui.connections.ConnectionsWindow;
 import com.github.johnbanq.wiresquid.gui.welcome.WelcomeWindow;
 import imgui.ImGui;
 
@@ -11,12 +11,12 @@ public class RootWindow {
 
     private final WelcomeWindow welcomeWindow = new WelcomeWindow();
 
-    private final SessionsWindow sessionsWindow = new SessionsWindow();
+    private final ConnectionsWindow connectionsWindow = new ConnectionsWindow();
 
     public void render() {
         renderMainMenuBar();
         welcomeWindow.render();
-        sessionsWindow.render();
+        connectionsWindow.render();
     }
 
     private void renderMainMenuBar() {
@@ -27,8 +27,8 @@ public class RootWindow {
                 if (ImGui.menuItem("Welcome", "", welcomeWindow.shouldShow())) {
                     welcomeWindow.toggleShouldShow();
                 }
-                if (ImGui.menuItem("Sessions", "", sessionsWindow.shouldShow())) {
-                    sessionsWindow.toggleShouldShow();;
+                if (ImGui.menuItem("Sessions", "", connectionsWindow.shouldShow())) {
+                    connectionsWindow.toggleShouldShow();;
                 }
                 ImGui.endMenu();
             }
