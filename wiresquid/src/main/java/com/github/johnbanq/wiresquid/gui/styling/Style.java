@@ -1,32 +1,13 @@
-package com.github.johnbanq.wiresquid.gui;
+package com.github.johnbanq.wiresquid.gui.styling;
 
-import com.google.common.io.ByteStreams;
-import imgui.*;
+import imgui.ImGui;
+import imgui.ImGuiStyle;
+import imgui.ImVec4;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiConfigFlags;
-import lombok.SneakyThrows;
 
-import java.io.InputStream;
 
-/**
- * central hub to hold all styling related state
- */
-public class Styling {
-
-    private static ImFont font;
-
-    @SneakyThrows
-    public static void loadFonts() {
-        ImFontAtlas fonts = ImGui.getIO().getFonts();
-        InputStream fontStream = Styling.class.getClassLoader().getResourceAsStream("Roboto-Regular.ttf");
-        assert fontStream != null;
-        font = fonts.addFontFromMemoryTTF(ByteStreams.toByteArray(fontStream), 18.0f);
-        fonts.build();
-    }
-
-    public static ImFont getFont() {
-        return font;
-    }
+public class Style {
 
     /**
      * configure style of the gui, based on https://github.com/ocornut/imgui/issues/707#issuecomment-468798935
