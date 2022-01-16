@@ -1,5 +1,6 @@
-package com.github.johnbanq.wiresquid.gui;
+package com.github.johnbanq.wiresquid.gui.welcome;
 
+import com.github.johnbanq.wiresquid.gui.ClosableWindow;
 import com.github.johnbanq.wiresquid.gui.styling.Fonts;
 import imgui.ImGui;
 import imgui.ImVec2;

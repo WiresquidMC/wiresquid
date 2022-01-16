@@ -1,5 +1,7 @@
 package com.github.johnbanq.wiresquid.gui;
 
+import com.github.johnbanq.wiresquid.gui.session.SessionsWindow;
+import com.github.johnbanq.wiresquid.gui.welcome.WelcomeWindow;
 import imgui.ImGui;
 
 /**

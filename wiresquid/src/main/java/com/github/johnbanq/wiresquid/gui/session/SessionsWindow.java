@@ -1,5 +1,6 @@
-package com.github.johnbanq.wiresquid.gui;
+package com.github.johnbanq.wiresquid.gui.session;
 
+import com.github.johnbanq.wiresquid.gui.ClosableWindow;
 import imgui.ImGui;
 import imgui.type.ImBoolean;
 
