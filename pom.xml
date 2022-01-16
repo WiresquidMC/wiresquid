@@ -6,7 +6,11 @@
 
     <groupId>com.nukkitx</groupId>
     <artifactId>proxypass</artifactId>
+    <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
+    <modules>
+        <module>wiresquid</module>
+    </modules>
     <name>ProxyPass</name>
 
     <repositories>
