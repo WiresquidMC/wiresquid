@@ -1,6 +1,7 @@
 package com.github.johnbanq.wiresquid.logic;
 
 
+import com.github.johnbanq.wiresquid.logic.connection.WiresquidConnection;
 import io.vavr.collection.Seq;
 import io.vavr.collection.SortedSet;
 import io.vavr.collection.TreeSet;

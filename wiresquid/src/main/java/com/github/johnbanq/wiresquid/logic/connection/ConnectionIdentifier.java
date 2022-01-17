@@ -1,4 +1,4 @@
-package com.github.johnbanq.wiresquid.logic;
+package com.github.johnbanq.wiresquid.logic.connection;
 
 import lombok.Value;
 

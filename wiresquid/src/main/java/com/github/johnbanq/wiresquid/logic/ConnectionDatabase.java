@@ -2,6 +2,9 @@ package com.github.johnbanq.wiresquid.logic;
 
 import com.github.johnbanq.wiresquid.api.Connection;
 import com.github.johnbanq.wiresquid.api.ConnectionListener;
+import com.github.johnbanq.wiresquid.logic.connection.ConnectionState;
+import com.github.johnbanq.wiresquid.logic.connection.ReceivedPacket;
+import com.github.johnbanq.wiresquid.logic.connection.WiresquidConnection;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.nukkitx.protocol.bedrock.BedrockPacket;
@@ -49,10 +52,10 @@ public class ConnectionDatabase implements ConnectionListener {
 
     @Override
     public synchronized void onNewConnection(Connection connection) {
-        WiresquidConnection conn = new WiresquidConnection(connectionId, ConnectionState.ACTIVE, null);
-        connectionId++;
-
         if(id2connections.inverse().get(connection)==null) {
+            WiresquidConnection conn = new WiresquidConnection(connectionId, ConnectionState.ACTIVE, null);
+            connectionId++;
+
             connections = connections.put(conn.getId(), conn);
             id2connections.put(conn.getId(), connection);
             id2packets.put(conn.getId(), io.vavr.collection.List.empty());

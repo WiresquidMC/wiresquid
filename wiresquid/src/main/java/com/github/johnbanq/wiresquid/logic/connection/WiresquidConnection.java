@@ -1,5 +1,6 @@
-package com.github.johnbanq.wiresquid.logic;
+package com.github.johnbanq.wiresquid.logic.connection;
 
+import com.github.johnbanq.wiresquid.logic.ConnectionDatabase;
 import lombok.Value;
 
 import javax.annotation.Nullable;

@@ -1,5 +1,7 @@
 package com.github.johnbanq.wiresquid.logic;
 
+import com.github.johnbanq.wiresquid.logic.connection.ConnectionState;
+import com.github.johnbanq.wiresquid.logic.connection.WiresquidConnection;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -15,7 +17,8 @@ public class ConnectionFilter {
 
     @Nullable String playerName;
     @Nullable String playerUUID;
-    @Nullable ConnectionState state;
+    @Nullable
+    ConnectionState state;
 
     public ConnectionFilter() {
         this(null, null, null);

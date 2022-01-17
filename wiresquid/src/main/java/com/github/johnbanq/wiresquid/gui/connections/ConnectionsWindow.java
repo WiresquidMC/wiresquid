@@ -2,6 +2,10 @@ package com.github.johnbanq.wiresquid.gui.connections;
 
 import com.github.johnbanq.wiresquid.gui.ClosableWindow;
 import com.github.johnbanq.wiresquid.logic.*;
+import com.github.johnbanq.wiresquid.logic.ConnectionFilter;
+import com.github.johnbanq.wiresquid.logic.connection.ConnectionIdentifier;
+import com.github.johnbanq.wiresquid.logic.connection.ConnectionState;
+import com.github.johnbanq.wiresquid.logic.connection.WiresquidConnection;
 import imgui.ImGui;
 import imgui.ImGuiListClipper;
 import imgui.callback.ImListClipperCallback;
@@ -143,7 +147,8 @@ public class ConnectionsWindow implements ClosableWindow {
         return new String[]{"ALL", "ACTIVE", "CLOSED"};
     }
 
-    private @Nullable ConnectionState comboStringIndexToState(int idx) {
+    private @Nullable
+    ConnectionState comboStringIndexToState(int idx) {
         switch(idx) {
             case 0:
                 return null;
