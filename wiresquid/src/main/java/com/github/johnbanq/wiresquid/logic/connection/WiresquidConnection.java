@@ -6,7 +6,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 /**
- * value object representing a connection
+ * value object representing a connection recorded by the system
  */
 @Value
 public class WiresquidConnection {
