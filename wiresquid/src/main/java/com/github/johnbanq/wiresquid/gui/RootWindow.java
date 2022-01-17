@@ -2,6 +2,7 @@ package com.github.johnbanq.wiresquid.gui;
 
 import com.github.johnbanq.wiresquid.gui.connections.ConnectionsWindow;
 import com.github.johnbanq.wiresquid.gui.welcome.WelcomeWindow;
+import com.github.johnbanq.wiresquid.logic.ConnectionDatabase;
 import imgui.ImGui;
 
 /**
@@ -9,9 +10,14 @@ import imgui.ImGui;
  */
 public class RootWindow {
 
-    private final WelcomeWindow welcomeWindow = new WelcomeWindow();
+    private final ConnectionsWindow connectionsWindow;
 
-    private final ConnectionsWindow connectionsWindow = new ConnectionsWindow();
+    private final WelcomeWindow welcomeWindow;
+
+    public RootWindow(ConnectionDatabase database) {
+        connectionsWindow = new ConnectionsWindow(database);
+        welcomeWindow = new WelcomeWindow();
+    }
 
     public void render() {
         renderMainMenuBar();

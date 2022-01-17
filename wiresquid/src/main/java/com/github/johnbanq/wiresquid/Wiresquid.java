@@ -3,8 +3,10 @@ package com.github.johnbanq.wiresquid;
 import com.github.johnbanq.wiresquid.api.Connection;
 import com.github.johnbanq.wiresquid.api.ConnectionListener;
 import com.github.johnbanq.wiresquid.gui.WiresquidGUI;
+import com.github.johnbanq.wiresquid.logic.ConnectionDatabase;
 import com.nukkitx.protocol.bedrock.BedrockPacket;
 import lombok.SneakyThrows;
+import org.checkerframework.checker.units.qual.C;
 
 import java.util.concurrent.Future;
 
@@ -13,12 +15,15 @@ import java.util.concurrent.Future;
  */
 public class Wiresquid {
 
+    private ConnectionDatabase database;
+
     private WiresquidGUI gui;
 
     // lifecycle //
 
     public void start() {
-        gui = new WiresquidGUI(this::stop);
+        database = new ConnectionDatabase();
+        gui = new WiresquidGUI(database, this::stop);
         gui.start();
     }
 
@@ -33,28 +38,10 @@ public class Wiresquid {
     // connection listening //
 
     public ConnectionListener getListener() {
-        return new ConnectionListener() {
-            @Override
-            public void onNewConnection(Connection connection) {
-
-            }
-
-            @Override
-            public void onPacketFromClient(Connection connection, BedrockPacket packet) {
-
-            }
-
-            @Override
-            public void onPacketFromServer(Connection connection, BedrockPacket packet) {
-
-            }
-
-            @Override
-            public void onConnectionClosed(Connection connection) {
-
-            }
-        };
+        return database;
     }
+
+    // main //
 
     @SneakyThrows
     public static void main(String[] args) {

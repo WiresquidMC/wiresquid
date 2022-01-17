@@ -1,18 +1,19 @@
 package com.github.johnbanq.wiresquid.logic;
 
-import com.github.johnbanq.wiresquid.api.Connection;
-import lombok.*;
+import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * holder of {@link Connection} object, and various misc data for presenting
+ * value object representing a connection
  */
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Getter
+@Value
 public class WiresquidConnection {
+
+    /**
+     * id of the connection, unique within the {@link ConnectionDatabase}
+     */
+    long id;
 
     /**
      * state of the connection
@@ -24,31 +25,12 @@ public class WiresquidConnection {
      */
     @Nullable ConnectionIdentifier identifier;
 
-    /**
-     * represents the connection object, null if the connection is disconnected
-     */
-    @Nullable Connection connection;
-
-    private List<ReceivedPacket> packets;
-
-    public static WiresquidConnection fromNewConnection(Connection connection) {
+    public WiresquidConnection toClosed() {
         return new WiresquidConnection(
-                ConnectionState.ACTIVE,
-                null,
-                connection,
-                new ArrayList<>()
+                id,
+                ConnectionState.CLOSED,
+                identifier
         );
-    }
-
-    // listeners //
-
-    public synchronized void onPacketReceived(ReceivedPacket packet) {
-        packets.add(packet);
-    }
-
-    public synchronized void onConnectionClosed() {
-        state = ConnectionState.CLOSED;
-        connection = null;
     }
 
 }

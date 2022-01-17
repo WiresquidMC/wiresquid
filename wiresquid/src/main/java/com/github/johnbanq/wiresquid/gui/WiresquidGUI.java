@@ -2,6 +2,7 @@ package com.github.johnbanq.wiresquid.gui;
 
 import com.github.johnbanq.wiresquid.gui.styling.Fonts;
 import com.github.johnbanq.wiresquid.gui.styling.Style;
+import com.github.johnbanq.wiresquid.logic.ConnectionDatabase;
 import imgui.ImGui;
 import imgui.app.Application;
 import imgui.app.Configuration;
@@ -24,6 +25,8 @@ public class WiresquidGUI extends Application {
 
     private boolean closeWindowHandlerCalled = false;
 
+    private final ConnectionDatabase database;
+
     private final Runnable onTryToCloseWindow;
 
     // threading state //
@@ -34,7 +37,8 @@ public class WiresquidGUI extends Application {
 
     private Thread thread;
 
-    public WiresquidGUI(Runnable onTryToCloseWindow) {
+    public WiresquidGUI(ConnectionDatabase database, Runnable onTryToCloseWindow) {
+        this.database = database;
         this.onTryToCloseWindow = onTryToCloseWindow;
     }
 
@@ -51,7 +55,7 @@ public class WiresquidGUI extends Application {
         super.initImGui(config);
         loadFonts();
         Style.configureStyle(ImGui.getStyle());
-        root = new RootWindow();
+        root = new RootWindow(database);
     }
 
     @Override

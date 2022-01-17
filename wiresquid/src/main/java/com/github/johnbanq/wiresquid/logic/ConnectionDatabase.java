@@ -2,39 +2,62 @@ package com.github.johnbanq.wiresquid.logic;
 
 import com.github.johnbanq.wiresquid.api.Connection;
 import com.github.johnbanq.wiresquid.api.ConnectionListener;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.nukkitx.protocol.bedrock.BedrockPacket;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * core object of storing and managing connections and packets within each
+ * core object for storing and managing connections and packets within each
  */
 @Slf4j
 public class ConnectionDatabase implements ConnectionListener {
 
-    private final Map<Connection, WiresquidConnection> activeConnections = new HashMap<>();
+    // connection states //
 
-    private final List<WiresquidConnection> connections = Collections.synchronizedList(new LinkedList<>());
+    private long connectionId = 1;
 
-    // queries //
+    private io.vavr.collection.SortedMap<Long, WiresquidConnection> connections = io.vavr.collection.TreeMap.empty();
 
-    /**
-     * returns list of active connections
-     * note: the connections list will be concurrently updated as new connection comes in,
-     *       only new connections will be appended to the end of the list
-     */
-    public List<WiresquidConnection> getConnections() {
-        return connections;
+    private final BiMap<Long, Connection> id2connections = HashBiMap.create();
+
+    private final Map<Long, io.vavr.collection.List<ReceivedPacket>> id2packets = new HashMap<>();
+
+    // subscription states //
+
+    private final Set<ConnectionSubscription> subscriptions = new HashSet<>();
+
+    // subscriptions //
+
+    public synchronized ConnectionSubscription subscribeConnections(ConnectionFilter filter) {
+        ConnectionSubscription sub = new ConnectionSubscription(filter, this::stopSubscription);
+        sub.onInit(connections.values());
+        subscriptions.add(sub);
+        return sub;
+    }
+
+    private synchronized void stopSubscription(ConnectionSubscription subscription) {
+        subscriptions.remove(subscription);
     }
 
     // listener logic //
 
     @Override
     public synchronized void onNewConnection(Connection connection) {
-        WiresquidConnection conn = WiresquidConnection.fromNewConnection(connection);
-        if(activeConnections.put(connection, conn)==null) {
-            connections.add(conn);
+        WiresquidConnection conn = new WiresquidConnection(connectionId, ConnectionState.ACTIVE, null);
+        connectionId++;
+
+        if(id2connections.inverse().get(connection)==null) {
+            connections = connections.put(conn.getId(), conn);
+            id2connections.put(conn.getId(), connection);
+            id2packets.put(conn.getId(), io.vavr.collection.List.empty());
+
+            subscriptions.forEach(s->s.onConnectionCreated(conn));
         } else {
             log.warn("onNewConnection() was called twice on connection {}, ignoring the second one!", connection);
         }
@@ -42,29 +65,44 @@ public class ConnectionDatabase implements ConnectionListener {
 
     @Override
     public synchronized void onPacketFromClient(Connection connection, BedrockPacket packet) {
-        WiresquidConnection conn = activeConnections.get(connection);
-        if(conn!=null) {
-            conn.onPacketReceived(new ReceivedPacket(ReceivedPacket.Direction.CLIENT_TO_SERVER, packet));
-        } else {
-            log.warn("onPacketFromClient() was called twice on non-active connection {}, ignoring!", connection);
-        }
+        onPacketReceived(
+                connection,
+                new ReceivedPacket(ReceivedPacket.Direction.CLIENT_TO_SERVER, packet)
+        );
     }
 
     @Override
     public synchronized void onPacketFromServer(Connection connection, BedrockPacket packet) {
-        WiresquidConnection conn = activeConnections.get(connection);
-        if(conn!=null) {
-            conn.onPacketReceived(new ReceivedPacket(ReceivedPacket.Direction.SERVER_TO_CLIENT, packet));
+        onPacketReceived(
+                connection,
+                new ReceivedPacket(ReceivedPacket.Direction.SERVER_TO_CLIENT, packet)
+        );
+    }
+
+    private synchronized void onPacketReceived(Connection connection, ReceivedPacket packet) {
+        Long id = id2connections.inverse().get(connection);
+        if(id!=null) {
+            this.id2packets.computeIfPresent(
+                    id,
+                    (i,packets)->packets.append(packet)
+            );
         } else {
-            log.warn("onPacketFromServer() was called twice on non-active connection {}, ignoring!", connection);
+            log.warn("onPacketFrom*() was called on non-active connection {}, ignoring!", connection);
         }
     }
 
     @Override
     public synchronized void onConnectionClosed(Connection connection) {
-        WiresquidConnection conn = activeConnections.remove(connection);
-        if(conn != null) {
-            conn.onConnectionClosed();
+        Long id = id2connections.inverse().remove(connection);
+        if(id != null) {
+            connections = connections.computeIfPresent(
+                    id,
+                    (i,p)-> {
+                        WiresquidConnection np = p.toClosed();
+                        subscriptions.forEach(s->s.onConnectionStateChange(p, np));
+                        return np;
+                    }
+            )._2;
         }
     }
 
