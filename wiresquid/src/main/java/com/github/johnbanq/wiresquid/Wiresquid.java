@@ -1,12 +1,9 @@
 package com.github.johnbanq.wiresquid;
 
-import com.github.johnbanq.wiresquid.api.Connection;
 import com.github.johnbanq.wiresquid.api.ConnectionListener;
 import com.github.johnbanq.wiresquid.gui.WiresquidGUI;
 import com.github.johnbanq.wiresquid.logic.ConnectionDatabase;
-import com.nukkitx.protocol.bedrock.BedrockPacket;
 import lombok.SneakyThrows;
-import org.checkerframework.checker.units.qual.C;
 
 import java.util.concurrent.Future;
 
@@ -15,24 +12,45 @@ import java.util.concurrent.Future;
  */
 public class Wiresquid {
 
+    private final Runnable guiStopCallback;
+
     private ConnectionDatabase database;
 
     private WiresquidGUI gui;
+
+    public Wiresquid() {
+        this(()->{});
+    }
+
+    /**
+     * @param guiStopCallback callback on wiresquid is stopped by closing the GUI window
+     *                        wiresquid will stop after this callback is completed
+     */
+    public Wiresquid(Runnable guiStopCallback) {
+        this.guiStopCallback = guiStopCallback;
+    }
 
     // lifecycle //
 
     public void start() {
         database = new ConnectionDatabase();
-        gui = new WiresquidGUI(database, this::stop);
+        database.start();
+        gui = new WiresquidGUI(database, this::stopFromGUI);
         gui.start();
     }
 
     public void stop() {
         gui.stop();
+        database.stop();
     }
 
     public Future<Void> getStopFuture() {
         return gui.getStopFuture();
+    }
+    
+    private void stopFromGUI() {
+        guiStopCallback.run();
+        stop();
     }
 
     // connection listening //

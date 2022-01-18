@@ -23,6 +23,10 @@ import java.util.Set;
 @Slf4j
 public class ConnectionDatabase implements ConnectionListener {
 
+    // lifecycle //
+
+    private boolean closing = false;
+
     // connection states //
 
     private long connectionId = 1;
@@ -36,6 +40,16 @@ public class ConnectionDatabase implements ConnectionListener {
     // subscription states //
 
     private final Set<ConnectionSubscription> subscriptions = new HashSet<>();
+
+    // lifecycle //
+
+    public void start() {
+
+    }
+
+    public void stop() {
+        closing = true;
+    }
 
     // subscriptions //
 
@@ -54,6 +68,10 @@ public class ConnectionDatabase implements ConnectionListener {
 
     @Override
     public synchronized void onNewConnection(Connection connection) {
+        // return if closed
+        if(closing) {
+            return;
+        }
         if(id2connections.inverse().get(connection)==null) {
             WiresquidConnection conn = new WiresquidConnection(connectionId, ConnectionState.ACTIVE, null);
             connectionId++;
@@ -70,6 +88,10 @@ public class ConnectionDatabase implements ConnectionListener {
 
     @Override
     public synchronized void onPacketFromClient(Connection connection, BedrockPacket packet) {
+        // no-op on closed
+        if(closing) {
+            return;
+        }
         onPacketReceived(
                 connection,
                 new ReceivedPacket(ReceivedPacket.Direction.CLIENT_TO_SERVER, packet)
@@ -78,6 +100,10 @@ public class ConnectionDatabase implements ConnectionListener {
 
     @Override
     public synchronized void onPacketFromServer(Connection connection, BedrockPacket packet) {
+        // no-op on closed
+        if(closing) {
+            return;
+        }
         onPacketReceived(
                 connection,
                 new ReceivedPacket(ReceivedPacket.Direction.SERVER_TO_CLIENT, packet)
@@ -85,6 +111,10 @@ public class ConnectionDatabase implements ConnectionListener {
     }
 
     private synchronized void onPacketReceived(Connection connection, ReceivedPacket packet) {
+        // no-op on closed
+        if(closing) {
+            return;
+        }
         Long id = id2connections.inverse().get(connection);
         if(id!=null) {
             // log packets
@@ -118,6 +148,10 @@ public class ConnectionDatabase implements ConnectionListener {
 
     @Override
     public synchronized void onConnectionClosed(Connection connection) {
+        // no-op on closed
+        if(closing) {
+            return;
+        }
         Long id = id2connections.inverse().remove(connection);
         if(id != null) {
             connections = connections.computeIfPresent(id, (i,p)-> {
