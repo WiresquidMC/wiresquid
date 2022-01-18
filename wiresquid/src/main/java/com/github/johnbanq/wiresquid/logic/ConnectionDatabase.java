@@ -2,12 +2,14 @@ package com.github.johnbanq.wiresquid.logic;
 
 import com.github.johnbanq.wiresquid.api.Connection;
 import com.github.johnbanq.wiresquid.api.ConnectionListener;
+import com.github.johnbanq.wiresquid.logic.connection.ConnectionIdentifier;
 import com.github.johnbanq.wiresquid.logic.connection.ConnectionState;
 import com.github.johnbanq.wiresquid.logic.connection.ReceivedPacket;
 import com.github.johnbanq.wiresquid.logic.connection.WiresquidConnection;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.nukkitx.protocol.bedrock.BedrockPacket;
+import com.nukkitx.protocol.bedrock.packet.LoginPacket;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
@@ -85,10 +87,30 @@ public class ConnectionDatabase implements ConnectionListener {
     private synchronized void onPacketReceived(Connection connection, ReceivedPacket packet) {
         Long id = id2connections.inverse().get(connection);
         if(id!=null) {
-            this.id2packets.computeIfPresent(
-                    id,
-                    (i,packets)->packets.append(packet)
-            );
+            // log packets
+            this.id2packets.computeIfPresent(id, (i,packets)->packets.append(packet));
+            // update identifier on LoginPacket
+            if(packet.getPacket() instanceof LoginPacket) {
+                this.connections.computeIfPresent(id, (i,c)-> {
+                    ConnectionIdentifier ident;
+
+                    try {
+                        ident = IdentifierUtils.parseIdentifier((LoginPacket) packet.getPacket());
+                    } catch(Exception e) {
+                        log.error(
+                                "error while parsing identifier information for connection {}, falling through!",
+                                connection,
+                                e
+                        );
+                        return c;
+                    }
+
+                    WiresquidConnection newC = c.withIdentifier(ident);
+                    subscriptions.forEach(s->s.onConnectionStateChange(c, newC));
+
+                    return newC;
+                });
+            }
         } else {
             log.warn("onPacketFrom*() was called on non-active connection {}, ignoring!", connection);
         }
@@ -98,14 +120,11 @@ public class ConnectionDatabase implements ConnectionListener {
     public synchronized void onConnectionClosed(Connection connection) {
         Long id = id2connections.inverse().remove(connection);
         if(id != null) {
-            connections = connections.computeIfPresent(
-                    id,
-                    (i,p)-> {
-                        WiresquidConnection np = p.toClosed();
-                        subscriptions.forEach(s->s.onConnectionStateChange(p, np));
-                        return np;
-                    }
-            )._2;
+            connections = connections.computeIfPresent(id, (i,p)-> {
+                WiresquidConnection np = p.toClosed();
+                subscriptions.forEach(s->s.onConnectionStateChange(p, np));
+                return np;
+            })._2;
         }
     }
 

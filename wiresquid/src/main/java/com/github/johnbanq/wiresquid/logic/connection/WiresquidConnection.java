@@ -34,4 +34,12 @@ public class WiresquidConnection {
         );
     }
 
+    public WiresquidConnection withIdentifier(ConnectionIdentifier ident) {
+        return new WiresquidConnection(
+                id,
+                state,
+                ident
+        );
+    }
+
 }
