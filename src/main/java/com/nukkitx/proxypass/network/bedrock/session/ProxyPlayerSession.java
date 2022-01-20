@@ -1,5 +1,7 @@
 package com.nukkitx.proxypass.network.bedrock.session;
 
+import com.github.johnbanq.wiresquid.ProxypassWiresquidConnection;
+import com.github.johnbanq.wiresquid.api.ConnectionListener;
 import com.nukkitx.network.util.DisconnectReason;
 import com.nukkitx.protocol.bedrock.BedrockClientSession;
 import com.nukkitx.protocol.bedrock.BedrockPacket;
@@ -32,6 +34,8 @@ import java.util.function.Supplier;
 @Getter
 public class ProxyPlayerSession {
     private static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    private final ConnectionListener listener;
+    private final ProxypassWiresquidConnection connection;
     private final BedrockServerSession upstream;
     private final BedrockClientSession downstream;
     private final ProxyPass proxy;
@@ -60,14 +64,18 @@ public class ProxyPlayerSession {
                 throw new RuntimeException(e);
             }
         }
+        connection = new ProxypassWiresquidConnection(upstream, downstream);
+        listener = getProxy().getWiresquid().getListener();
         this.upstream.addDisconnectHandler(reason -> {
             if (reason != DisconnectReason.DISCONNECTED) {
                 this.downstream.disconnect();
             }
+            listener.onConnectionClosed(connection);
         });
         if (proxy.getConfiguration().isLoggingPackets()) {
             executor.scheduleAtFixedRate(this::flushLogBuffer, 5, 5, TimeUnit.SECONDS);
         }
+        listener.onNewConnection(connection);
     }
 
     public BatchHandler getUpstreamBatchHandler() {
@@ -102,10 +110,12 @@ public class ProxyPlayerSession {
     private class ProxyBatchHandler implements BatchHandler {
         private final BedrockSession session;
         private final String logPrefix;
+        private final boolean upstream;
 
         private ProxyBatchHandler(BedrockSession session, boolean upstream) {
             this.session = session;
             this.logPrefix = upstream ? "[SERVER BOUND]  -  " : "[CLIENT BOUND]  -  ";
+            this.upstream = upstream;
         }
 
         @Override
@@ -114,6 +124,11 @@ public class ProxyPlayerSession {
             boolean batchHandled = false;
             List<BedrockPacket> unhandled = new ArrayList<>();
             for (BedrockPacket packet : packets) {
+                if(upstream) {
+                    listener.onPacketFromClient(connection, packet);
+                } else {
+                    listener.onPacketFromServer(connection, packet);
+                }
                 if (!proxy.isIgnoredPacket(packet.getClass())) {
                     if (session.isLogging() && log.isTraceEnabled()) {
                         log.trace(this.logPrefix + " {}: {}", session.getAddress(), packet);

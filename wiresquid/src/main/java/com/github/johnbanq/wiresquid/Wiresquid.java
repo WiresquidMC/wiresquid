@@ -39,6 +39,10 @@ public class Wiresquid {
         gui.start();
     }
 
+    /**
+     * stop the wiresquid app
+     * note: stop() method must be idempotent: stopping a stopped app is no-op
+     */
     public void stop() {
         gui.stop();
         database.stop();

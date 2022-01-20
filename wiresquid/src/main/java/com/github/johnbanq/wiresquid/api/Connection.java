@@ -3,13 +3,18 @@ package com.github.johnbanq.wiresquid.api;
 import com.nukkitx.protocol.bedrock.BedrockPacket;
 
 /**
- * interface to represent an connection that can be provided to wiresquid
+ * interface to represent a connection that can be provided to wiresquid
  */
 public interface Connection {
 
+    enum Receiver {
+        CLIENT,
+        SERVER
+    }
+
     boolean isClosed();
 
-    void sendPacket(BedrockPacket packet);
+    void sendPacket(Receiver receiver, BedrockPacket packet);
 
     void disconnect(String reason);
 
