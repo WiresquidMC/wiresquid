@@ -13,7 +13,7 @@
 
     <modules>
         <module>wiresquid</module>
-        <module>proxypass</module>
+        <module>ProxyPass</module>
     </modules>
 
     <properties>
