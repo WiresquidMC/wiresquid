@@ -14,6 +14,7 @@ import com.nukkitx.nbt.NbtUtils;
 import com.nukkitx.protocol.bedrock.BedrockClient;
 import com.nukkitx.protocol.bedrock.BedrockPacketCodec;
 import com.nukkitx.protocol.bedrock.BedrockServer;
+import com.nukkitx.protocol.bedrock.v471.Bedrock_v471;
 import com.nukkitx.protocol.bedrock.v475.Bedrock_v475;
 import com.nukkitx.proxypass.network.ProxyBedrockEventHandler;
 import io.netty.util.ResourceLeakDetector;
@@ -35,7 +36,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Log4j2
 @Getter
 public class ProxyPass {
-
     public static final ObjectMapper JSON_MAPPER = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     public static final YAMLMapper YAML_MAPPER = (YAMLMapper) new YAMLMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     public static final String MINECRAFT_VERSION;
@@ -121,7 +121,6 @@ public class ProxyPass {
         log.info("starting wiresquid");
         wiresquid = new Wiresquid(this::shutdown);
         wiresquid.start();
-        log.info("startup complete");
         loop();
     }
 

@@ -1,0 +1,3 @@
+[submodule "ProxyPass"]
+	path = ProxyPass
+	url = https://github.com/WiresquidMC/ProxyPass.git
